@@ -1,0 +1,11 @@
+go 1.21.4
+
+use (
+	./customhandler
+	./fundamental/hellocustomlog
+	./fundamental/helloslog
+	./fundamental/introlog
+	./fundamental/format
+	./fundamental/structured
+	./fundamental/introslog
+)
