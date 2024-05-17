@@ -70,12 +70,9 @@ func (h *MyHandler) Handle(ctx context.Context, r slog.Record) error {
 
 	buf = fmt.Appendf(buf, "╚--------------------------------------╝\n")
 
-	// go func() {
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	// _, err := h.out.Write(buf)
 	h.out.Write(buf)
-	// }()
 
 	return nil
 }
