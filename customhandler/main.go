@@ -11,13 +11,12 @@ func main() {
 	handler := myhandler.New(os.Stdout, nil)
 	logger := slog.New(handler).With("serviceName", "payment service").
 		WithGroup("ProcessTxnFunc")
-	slog.SetDefault(logger)
 
-	slog.Info("New payment",
+	logger.Info("New payment",
 		slog.Group("Transaction",
 			slog.Int64("JPYAmount", 980),
 			slog.String("Marchant", "Abema.tv"),
 		),
 	)
-	slog.Warn("Unknown currency", slog.String("CurrenyCode", "???"))
+	logger.Warn("Unknown currency", slog.String("CurrenyCode", "???"))
 }
