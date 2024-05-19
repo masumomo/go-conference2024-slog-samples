@@ -9,8 +9,9 @@ import (
 
 func main() {
 	handler := myhandler.New(os.Stdout, nil)
-	logger := slog.New(handler).With("serviceName", "payment service").
-		WithGroup("ProcessTxnFunc")
+	logger := slog.New(handler).
+		With("serviceName", "payment service"). // Output service name
+		WithGroup("ProcessTxnFunc")             // Output within function name
 
 	logger.Info("New payment",
 		slog.Group("Transaction",

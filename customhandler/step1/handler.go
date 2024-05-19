@@ -88,7 +88,7 @@ func (h *MyHandler) appendAttr(buf []byte, a slog.Attr) []byte {
 		for _, ga := range attrs {
 			buf = h.appendAttr(buf, ga)
 		}
-	// We need to add more case for all Kind
+	// TODO: We need to add more case for all Kind
 	default:
 		buf = fmt.Appendf(buf, "%s: %s\n", a.Key, a.Value)
 	}

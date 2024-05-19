@@ -1,4 +1,4 @@
-package step3
+package step5
 
 import (
 	"context"
@@ -18,7 +18,8 @@ type MyHandler struct {
 }
 
 type Options struct {
-	Level slog.Leveler
+	Level    slog.Leveler
+	TimeZone *time.Location
 }
 
 func New(out io.Writer, opts *Options) *MyHandler {
@@ -28,6 +29,10 @@ func New(out io.Writer, opts *Options) *MyHandler {
 	}
 	if h.opts.Level == nil {
 		h.opts.Level = slog.LevelInfo
+	}
+
+	if h.opts.TimeZone == nil {
+		h.opts.TimeZone = time.FixedZone("Asia/Tokyo", 9*60*60)
 	}
 	return h
 }
@@ -40,19 +45,32 @@ func (h *MyHandler) Handle(ctx context.Context, r slog.Record) error {
 	buf := make([]byte, 0, 1024)
 	// TODO: Need to handler zero value
 
-	buf = fmt.Appendf(buf, "%s %s: %s\n", r.Time.Format(time.DateTime), r.Level, r.Message)
+	buf = fmt.Appendf(buf, "╔--------------------------------------╗\n")
+	buf = fmt.Appendf(buf, " %s%s: %s\n", decolateLogLevel(r.Level), r.Level, r.Message)
+	buf = fmt.Appendf(buf, " Local: %s\n", r.Time.Format(time.DateTime))
+	buf = fmt.Appendf(buf, " %s: %s\n", r.Time.Location(), r.Time.In(h.opts.TimeZone).Format(time.DateTime))
+
+	buf = fmt.Appendf(buf, " -------------------------------------- \n")
+
+	nestLevel := 0
 
 	for _, a := range h.attrs {
-		buf = h.appendAttr(buf, a)
+		buf = h.appendAttr(buf, a, nestLevel)
+	}
+	if nestLevel > 0 {
+		buf = fmt.Appendf(buf, "%*s└──", (nestLevel-1)*4, "")
 	}
 	for _, g := range h.groups {
-		buf = fmt.Appendf(buf, "%s\n", g)
+		buf = fmt.Appendf(buf, "  %s\n", g)
+		nestLevel++
 	}
 
 	r.Attrs(func(a slog.Attr) bool {
-		buf = h.appendAttr(buf, a)
+		buf = h.appendAttr(buf, a, nestLevel)
 		return true
 	})
+
+	buf = fmt.Appendf(buf, "╚--------------------------------------╝\n")
 
 	h.mu.Lock()
 	defer h.mu.Unlock()
@@ -60,8 +78,12 @@ func (h *MyHandler) Handle(ctx context.Context, r slog.Record) error {
 	return err
 }
 
-func (h *MyHandler) appendAttr(buf []byte, a slog.Attr) []byte {
+func (h *MyHandler) appendAttr(buf []byte, a slog.Attr, nestLevel int) []byte {
 	a.Value = a.Value.Resolve()
+	buf = fmt.Appendf(buf, "  ")
+	if nestLevel > 0 {
+		buf = fmt.Appendf(buf, "%*s└──", (nestLevel-1)*4, "")
+	}
 	switch a.Value.Kind() {
 	case slog.KindString:
 		buf = fmt.Appendf(buf, "%s: %q\n", a.Key, a.Value.String())
@@ -71,9 +93,10 @@ func (h *MyHandler) appendAttr(buf []byte, a slog.Attr) []byte {
 		attrs := a.Value.Group()
 		if a.Key != "" {
 			buf = fmt.Appendf(buf, "%s\n", a.Key)
+			nestLevel++
 		}
 		for _, ga := range attrs {
-			buf = h.appendAttr(buf, ga)
+			buf = h.appendAttr(buf, ga, nestLevel)
 		}
 	// TODO: We need to add more case for all Kind
 	default:
@@ -105,5 +128,18 @@ func (h *MyHandler) WithGroup(name string) slog.Handler {
 		groups: append(h.groups, name),
 		attrs:  h.attrs,
 		mu:     h.mu,
+	}
+}
+
+func decolateLogLevel(l slog.Level) string {
+	switch l {
+	case slog.LevelInfo:
+		return "🔍"
+	case slog.LevelWarn:
+		return "🐛"
+	case slog.LevelError:
+		return "❗"
+	default:
+		return "🪵"
 	}
 }
