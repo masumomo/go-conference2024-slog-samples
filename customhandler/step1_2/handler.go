@@ -38,30 +38,8 @@ func (h *MyHandler) Handle(ctx context.Context, r slog.Record) error {
 	buf := make([]byte, 0, 1024)
 	// TODO: Need to handler zero value
 
-	// Process Record
-	// FYI: Records are defined like this.
-	// type Record struct {
-	// 	Time time.Time
-	// 	Message string
-	// 	Level Level
-	// 	PC uintptr
-	// }
 	buf = fmt.Appendf(buf, "%s %s: %s\n", r.Time.Format(time.DateTime), r.Level, r.Message)
 
-	// Attrs calls f on each Attr in the [Record].
-	// Iteration stops if f returns false.
-	// func (r Record) Attrs(f func(Attr) bool) {
-	// 	for i := 0; i < r.nFront; i++ {
-	// 		if !f(r.front[i]) {
-	// 			return
-	// 		}
-	// 	}
-	// 	for _, a := range r.back {
-	// 		if !f(a) {
-	// 			return
-	// 		}
-	// 	}
-	// }
 	r.Attrs(func(a slog.Attr) bool {
 		buf = h.appendAttr(buf, a)
 		return true
