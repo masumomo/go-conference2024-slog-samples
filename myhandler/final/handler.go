@@ -46,9 +46,8 @@ func (h *MyHandler) Handle(ctx context.Context, r slog.Record) error {
 
 	buf = fmt.Appendf(buf, "╔--------------------------------------╗\n")
 	buf = fmt.Appendf(buf, " %s%s: %s\n", decolateLogLevel(r.Level), r.Level, r.Message)
-	buf = fmt.Appendf(buf, " Local: %s\n", r.Time.Format(time.DateTime))
-	buf = fmt.Appendf(buf, " JST  : %s\n", r.Time.In(h.opts.TimeZone).Format(time.DateTime))
-
+	buf = fmt.Appendf(buf, " UTC: %s\n", r.Time.In(time.UTC).Format(time.DateTime))
+	buf = fmt.Appendf(buf, " %s: %s\n", h.opts.TimeZone.String(), r.Time.In(h.opts.TimeZone).Format(time.DateTime))
 	buf = fmt.Appendf(buf, " -------------------------------------- \n")
 
 	nestLevel := 0
