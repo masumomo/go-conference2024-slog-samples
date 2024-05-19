@@ -10,9 +10,8 @@ import (
 )
 
 type MyHandler struct {
-	opts   Options
-	groups []string
-	// attrs  []slog.Attr
+	opts           Options
+	groups         []string
 	preformatAttrs []byte
 	out            io.Writer
 	mu             *sync.Mutex
