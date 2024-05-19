@@ -38,35 +38,29 @@ func (h *MyHandler) Handle(ctx context.Context, r slog.Record) error {
 	buf := make([]byte, 0, 1024)
 	// TODO: Need to handler zero value
 
-	// Process Record
-	// FYI: Records are defined like this.
-	// type Record struct {
-	// 	Time time.Time
-	// 	Message string
-	// 	Level Level
-	// 	PC uintptr
-	// }
+	/** Process Record
+
+	// Record holds time, message, logLebel,
+	// and Program Counter
+	type Record struct {
+		Time time.Time
+		Message string
+		Level Level
+		PC uintptr  // The program counter at the time the record was constructed
+	}
+	*/
+	// Output sample: 2024-05-19 13:55:12 INFO: New payment
 	buf = fmt.Appendf(buf, "%s %s: %s\n", r.Time.Format(time.DateTime), r.Level, r.Message)
 
-	// Attrs calls f on each Attr in the [Record].
-	// Iteration stops if f returns false.
-	// func (r Record) Attrs(f func(Attr) bool) {
-	// 	for i := 0; i < r.nFront; i++ {
-	// 		if !f(r.front[i]) {
-	// 			return
-	// 		}
-	// 	}
-	// 	for _, a := range r.back {
-	// 		if !f(a) {
-	// 			return
-	// 		}
-	// 	}
-	// }
+	// The Attrs function calls argument function
+	// on each Attr in the Record.
+	// Iteration stops if the func returns false.
 	r.Attrs(func(a slog.Attr) bool {
 		buf = h.appendAttr(buf, a)
 		return true
 	})
 
+	// Write the log entry
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	_, err := h.out.Write(buf)
@@ -96,9 +90,11 @@ func (h *MyHandler) appendAttr(buf []byte, a slog.Attr) []byte {
 }
 
 func (h *MyHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	// Return the handler itself for now
 	return h
 }
 
 func (h *MyHandler) WithGroup(name string) slog.Handler {
+	// Return the handler itself for now
 	return h
 }
