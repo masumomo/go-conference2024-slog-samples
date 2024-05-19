@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 
-	myhandler "github.com/masumomo/goconference2024_slog_demos/customhandler/step1"
+	myhandler "github.com/masumomo/goconference2024_slog_demos/myhandler/step1"
 )
 
 func main() {
