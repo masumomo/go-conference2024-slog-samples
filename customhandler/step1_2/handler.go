@@ -10,11 +10,9 @@ import (
 )
 
 type MyHandler struct {
-	opts   Options
-	groups []string
-	attrs  []slog.Attr
-	out    io.Writer
-	mu     *sync.Mutex
+	opts Options
+	out  io.Writer
+	mu   *sync.Mutex
 }
 
 type Options struct {
@@ -40,8 +38,30 @@ func (h *MyHandler) Handle(ctx context.Context, r slog.Record) error {
 	buf := make([]byte, 0, 1024)
 	// TODO: Need to handler zero value
 
+	// Process Record
+	// FYI: Records are defined like this.
+	// type Record struct {
+	// 	Time time.Time
+	// 	Message string
+	// 	Level Level
+	// 	PC uintptr
+	// }
 	buf = fmt.Appendf(buf, "%s %s: %s\n", r.Time.Format(time.DateTime), r.Level, r.Message)
 
+	// Attrs calls f on each Attr in the [Record].
+	// Iteration stops if f returns false.
+	// func (r Record) Attrs(f func(Attr) bool) {
+	// 	for i := 0; i < r.nFront; i++ {
+	// 		if !f(r.front[i]) {
+	// 			return
+	// 		}
+	// 	}
+	// 	for _, a := range r.back {
+	// 		if !f(a) {
+	// 			return
+	// 		}
+	// 	}
+	// }
 	r.Attrs(func(a slog.Attr) bool {
 		buf = h.appendAttr(buf, a)
 		return true
@@ -76,27 +96,9 @@ func (h *MyHandler) appendAttr(buf []byte, a slog.Attr) []byte {
 }
 
 func (h *MyHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	if len(attrs) == 0 {
-		return h
-	}
-	return &MyHandler{
-		opts:   h.opts,
-		out:    h.out,
-		groups: h.groups,
-		attrs:  append(h.attrs, attrs...),
-		mu:     h.mu,
-	}
+	return h
 }
 
 func (h *MyHandler) WithGroup(name string) slog.Handler {
-	if name == "" {
-		return h
-	}
-	return &MyHandler{
-		opts:   h.opts,
-		out:    h.out,
-		groups: append(h.groups, name),
-		attrs:  h.attrs,
-		mu:     h.mu,
-	}
+	return h
 }
