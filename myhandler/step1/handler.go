@@ -55,6 +55,7 @@ func (h *MyHandler) Handle(ctx context.Context, r slog.Record) error {
 	// The Attrs function calls argument function
 	// on each Attr in the Record.
 	// Iteration stops if the func returns false.
+	// Record has first 5 Attrs as array, and rest of them are slice
 	r.Attrs(func(a slog.Attr) bool {
 		buf = h.appendAttr(buf, a)
 		return true
