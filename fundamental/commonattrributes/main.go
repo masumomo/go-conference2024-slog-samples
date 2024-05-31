@@ -8,11 +8,13 @@ import (
 
 func main() {
 	// Add context for this logger
-	srvlogger := slog.New(slog.NewJSONHandler(os.Stdin, nil)).With(slog.String("serviceName", "event-register"))
+	srvlogger := slog.New(slog.NewJSONHandler(os.Stdin, nil)).
+		With(slog.String("appVer", "1.21")).
+		WithGroup("app-log")
 
 	srvlogger.Info("Start processing")
 	srvlogger.Info("Go Conference prolosal submitted!",
-		slog.Time("submitAt", time.Date(2024, 6, 7, 13, 20, 20, 0, time.FixedZone("Asia/Tokyo", 9*60*60))),
+		slog.Time("submitAt", time.Date(2024, 6, 7, 13, 20, 20, 0, time.UTC)),
 		slog.String("SubmittedBy", "Miki"),
 		slog.Group("Session",
 			slog.String("Title", "Hack everything!"),

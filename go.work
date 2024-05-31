@@ -6,6 +6,7 @@ use (
 	./fundamental/helloslog
 	./fundamental/introlog
 	./fundamental/format
+	./fundamental/commonattrributes
 	./fundamental/structured
 	./fundamental/introslog
 )
