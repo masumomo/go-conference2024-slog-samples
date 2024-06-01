@@ -9,7 +9,7 @@ import (
 	myhandler "github.com/masumomo/goconference2024_slog_demos/myhandler/final"
 )
 
-func TestSlogtest(t *testing.T) {
+func TestMyHandler(t *testing.T) {
 	var buf bytes.Buffer
 	h := myhandler.New(&buf, nil)
 	results := func() []map[string]any {
@@ -18,7 +18,6 @@ func TestSlogtest(t *testing.T) {
 			if len(line) == 0 {
 				continue
 			}
-			// fmt.Print(line.String())
 			var m map[string]any
 			if err := json.Unmarshal(line, &m); err != nil {
 				t.Fatal(err)
