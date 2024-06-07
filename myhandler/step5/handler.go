@@ -10,11 +10,11 @@ import (
 )
 
 type MyHandler struct {
-	opts   Options
-	groups []string
-	attrs  []slog.Attr
-	out    io.Writer
-	mu     *sync.Mutex
+	opts           Options
+	groups         []string
+	preformatAttrs []byte
+	out            io.Writer
+	mu             *sync.Mutex
 }
 
 type Options struct {
@@ -53,9 +53,7 @@ func (h *MyHandler) Handle(ctx context.Context, r slog.Record) error {
 
 	nestLevel := 0
 
-	for _, a := range h.attrs {
-		buf = h.appendAttr(buf, a, nestLevel)
-	}
+	buf = append(buf, h.preformatAttrs...)
 	if nestLevel > 0 {
 		buf = fmt.Appendf(buf, "%*s└──", (nestLevel-1)*4, "")
 	}
@@ -105,15 +103,19 @@ func (h *MyHandler) appendAttr(buf []byte, a slog.Attr, nestLevel int) []byte {
 }
 
 func (h *MyHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	var buf []byte
+	for _, a := range attrs {
+		buf = h.appendAttr(buf, a, 0)
+	}
 	if len(attrs) == 0 {
 		return h
 	}
 	return &MyHandler{
-		opts:   h.opts,
-		out:    h.out,
-		groups: h.groups,
-		attrs:  append(h.attrs, attrs...),
-		mu:     h.mu,
+		opts:           h.opts,
+		out:            h.out,
+		groups:         h.groups,
+		preformatAttrs: append(h.preformatAttrs, buf...),
+		mu:             h.mu,
 	}
 }
 
@@ -122,11 +124,11 @@ func (h *MyHandler) WithGroup(name string) slog.Handler {
 		return h
 	}
 	return &MyHandler{
-		opts:   h.opts,
-		out:    h.out,
-		groups: append(h.groups, name),
-		attrs:  h.attrs,
-		mu:     h.mu,
+		opts:           h.opts,
+		out:            h.out,
+		groups:         append(h.groups, name),
+		preformatAttrs: h.preformatAttrs,
+		mu:             h.mu,
 	}
 }
 
